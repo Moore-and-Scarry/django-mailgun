@@ -2,6 +2,7 @@ import requests
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.message import sanitize_address
+import django.dispatch
 
 try:
     from cStringIO import StringIO
@@ -10,6 +11,8 @@ except ImportError:
         from StringIO import StringIO
     except ImportError:
         from io import StringIO
+
+mailgun_message_queued = django.dispatch.Signal(providing_args=["response"])
 
 class MailgunAPIError(Exception):
     pass
@@ -77,6 +80,8 @@ class MailgunBackend(BaseEmailBackend):
                 raise MailgunAPIError(r)
             return False
 
+        # Send a signal with the response
+        mailgun_message_queued.send(sender=None, response=r)
         return True
 
     def send_messages(self, email_messages):
