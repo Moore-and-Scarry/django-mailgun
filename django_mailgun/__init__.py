@@ -81,7 +81,7 @@ class MailgunBackend(BaseEmailBackend):
             return False
 
         # Send a signal with the response
-        mailgun_message_queued.send(sender=None, response=r)
+        mailgun_message_queued.send(sender=None, weak=False, response=r)
         return True
 
     def send_messages(self, email_messages):
